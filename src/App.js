@@ -16,6 +16,7 @@ function App() {
         setTrueContact(true)
     };
 
+    //function for loading script tag with source src in frontend
     function loadScript(src) {
         return new Promise((resolve) => {
             const script = document.createElement('script')
@@ -30,48 +31,37 @@ function App() {
         })
     }
 
+    // for displaying razorpay pop up
     async function displayRazorpay() {
 
         if (contact.toString().length === 10) {
             setTrueContact(true);
+            // loading script with razorpay's given api for frontend for getting Razorpay object
             const res = await loadScript('https://checkout.razorpay.com/v1/checkout.js')
-
             if (!res) {
                 alert('Razorpay SDK failed to load. Are you online?')
                 return
             }
-            let option = {
-                amount: amount,
-                email: email,
-                name: name,
-                contact: contact
-            }
 
+            //getting orderid from backend
             const data = await fetch('https://mypay-production.up.railway.app/razorpay/' + amount.toString(), {method: 'POST'}).then((t) =>
                 t.json()
             )
 
-            // console.log(data)
-
             const options = {
                 "key": "rzp_test_aqRrSZmCJ6Z4pC", // Enter the Key ID generated from the Dashboard
-                "amount": data.amount.toString(), // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+                "amount": data.amount.toString(), // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paisa
                 "currency": data.currency,
                 "name": "MyPay",
                 "description": "Test Transaction",
                 "image": "https://mypay-production.up.railway.app/razorpay/logo.svg",
-                "order_id": data.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+                "order_id": data.id,
                 "handler": async function (response) {
-                    // alert(response.razorpay_payment_id);
-                    // alert(response.razorpay_order_id);
-                    // alert(response.razorpay_signature)
+
                     console.log(response)
                     setStatus(true);
 
-                    const status = await fetch('https://mypay-production.up.railway.app/payment_done/' + response.razorpay_order_id, {method: 'POST'}).then((t) =>
-                        t.json()
-                    )
-                    console.log("Status: " + status)
+
                 },
                 "prefill": {
                     "name": name,
@@ -93,7 +83,7 @@ function App() {
 
 
     }
-
+// Creating React Form
     return (
         <div className="App">
             <header className="App-header">
@@ -139,6 +129,7 @@ function App() {
                         </tr>
                     </table>
                     <br/>
+
                     <Button sx={{
                         bgcolor: '#61dafb',
                         boxShadow: 1,
@@ -151,6 +142,7 @@ function App() {
                 </form>
 
             </header>
+
             <Snackbar open={status} autoHideDuration={6000} onClose={handleClose}>
                 <Alert onClose={handleClose} severity="success" sx={{width: '100%'}}>
                     Transaction completed
